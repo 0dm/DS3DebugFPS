@@ -8,6 +8,9 @@ Move D3DCompiler_43.dll and fps.txt into your game directory.
 
 Enter your desired framerate limit on the first line of fps.txt (default is 1000)
 
+# Is it safe to use online?
+Yes.
+
 # Borderless
 This will not work in full screen mode, you will need to be in windowed mode. This DLL will attempt to fullscreen the game in borderless window mode - it will fit screen too!
 
@@ -16,8 +19,9 @@ Users of PyreProtecc will find that this DLL shares the same name as PyreProtecc
 
 # **Yes, you could just use the public Dark Souls III cheat table to achieve this.**
 
-| Credits  |                                                            | 
-|----------|------------------------------------------------------------|
-| Luke_Yui | Debug Menu Mod                                             |
-| inuNorii | Debug Menu Pointers in the public Cheat Table              | 
-| Pyre     | DLL, could not have done without PyreProtecc's source code |
+
+| Credits  |                                                                    | 
+|----------|--------------------------------------------------------------------|
+| Luke_Yui | Debug Menu Mod                                                     |
+| inuNorii | Debug Menu Pointers in the public Cheat Table                      | 
+| Pyre     | DLL wrapper, could not have done without PyreProtecc's source code.|
