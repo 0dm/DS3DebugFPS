@@ -9,7 +9,7 @@ DWORD64 SprjFlipper = 0x144888440;
 
 void setFps(float FPS) {
    
-	// Find Process
+    // Find Process
     DWORD PID;
     HWND hWnd = FindWindowA(NULL, "DARK SOULS III");
     GetWindowThreadProcessId(hWnd, &PID);
