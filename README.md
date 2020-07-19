@@ -1,4 +1,4 @@
-# Dark-Souls-3-FPS-Unlock-Borderless
+# DS3DebugFps
 Unlock the frame rate in Dark Souls III. 
 
 This project is open source and written in C.
