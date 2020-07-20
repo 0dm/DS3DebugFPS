@@ -9,7 +9,7 @@ Move D3DCompiler_43.dll and fps.txt into your game directory.
 Enter your desired framerate limit on the first line of fps.txt (default is 1000)
 
 # Is it safe to use online?
-Yes.
+Probably? Nobody has tested :(
 
 # Borderless
 This will not work in full screen mode, you will need to be in windowed mode. This DLL will attempt to fullscreen the game in borderless window mode - it will fit screen too!
