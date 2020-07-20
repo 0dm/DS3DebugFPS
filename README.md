@@ -18,6 +18,7 @@ This will not work in full screen mode, you will need to be in windowed mode (ma
 Users of PyreProtecc will find that this DLL shares the same name as PyreProtecc, resulting in them being incompatible (it's late and I can't chain them). **PyreProtecc V5 will include all of this anywway.**
 
 # **Yes, you could just use the public Dark Souls III cheat table to achieve this.**
+Check this out on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
 
 
 | Credits  |                                                                    | 
