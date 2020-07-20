@@ -12,7 +12,7 @@ Enter your desired framerate limit on the first line of fps.txt (default is 1000
 Yes, there's a very low chance that this bans.
 
 # Borderless
-This will not work in full screen mode, you will need to be in windowed mode. This DLL will attempt to fullscreen the game in borderless window mode - it will fit screen too!
+This will not work in full screen mode, you will need to be in windowed mode (manually set it in game). This DLL will attempt to fullscreen the game in borderless window mode - it will fit screen too!
 
 # Compatibility
 Users of PyreProtecc will find that this DLL shares the same name as PyreProtecc, resulting in them being incompatible (it's late and I can't chain them). **PyreProtecc V5 will include all of this anywway.**
