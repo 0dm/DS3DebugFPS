@@ -21,8 +21,9 @@ Users of PyreProtecc will find that this DLL shares the same name as PyreProtecc
 Check this out on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
 
 
-| Credits  |                                                                    | 
-|----------|--------------------------------------------------------------------|
-| Luke_Yui | Debug Menu Mod                                                     |
-| inuNorii | Debug Menu Pointers in the public Cheat Table                      | 
-| Pyre     | DLL wrapper, could not have done without PyreProtecc's source code.|
+| Credits  |                                                                       | 
+|----------|-----------------------------------------------------------------------|
+| Luke_Yui    | Debug Menu Mod                                                     |
+| inuNorii    | Debug Menu Pointers in the public Cheat Table                      | 
+| Pyre        | DLL wrapper, could not have done without PyreProtecc's source code.|
+| bladecoding | Remove intro screens memory region
