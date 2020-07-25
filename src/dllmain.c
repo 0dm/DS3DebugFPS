@@ -9,7 +9,7 @@ DWORD64 SprjFlipper = 0x144888440;
 
 void setFps(float FPS) {
    
-	// Find Process
+    // Find Process
     DWORD PID;
     HWND hWnd = FindWindowA(NULL, "DARK SOULS III");
     GetWindowThreadProcessId(hWnd, &PID);
@@ -22,7 +22,7 @@ void setFps(float FPS) {
     // Borderless
     RECT final;
     final.right = GetSystemMetrics(SM_CXSCREEN);
-	final.bottom = GetSystemMetrics(SM_CYSCREEN);
+    final.bottom = GetSystemMetrics(SM_CYSCREEN);
     final.left = 0;
     final.top = 0;
     SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);

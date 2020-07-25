@@ -30,27 +30,3 @@ loadnjmp D3DPreprocess
 loadnjmp D3DReflect
 loadnjmp D3DReturnFailure1
 loadnjmp D3DStripShader
-
-
-
-
-
-
- 
- 
-
-
-
- 
-
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
