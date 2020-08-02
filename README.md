@@ -10,6 +10,7 @@ Enter your desired framerate limit on the first line of fps.txt (default is 1000
 
 # Is it safe to use online?
 Yes, there's a very low chance that this bans.
+
 2020/8/1: Users have reported that the mod is safe to use online without penalization, but please use it at your own discretion!
 
 # Borderless
