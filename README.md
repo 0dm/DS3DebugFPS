@@ -1,12 +1,30 @@
 # DS3DebugFps
 Unlock the frame rate in Dark Souls III. 
-
 This project is open source and written in C.
 
 # Installation
-Move D3DCompiler_43.dll and fps.txt into your game directory.
+Move D3DCompiler_43.dll and FPSconfig.ini into your game directory.
 
-Enter your desired framerate limit on the first line of fps.txt (default is 1000)
+Edit FPSconfig.ini to your liking.
+Preview:
+```ini
+; Config file for ds3DebugFps
+
+[Settings]
+fps = 144.0	              ; Fps Cap
+
+UseCustomScreenDimensions = 0 ; Set to 1 to change how the game is stretched, by default it will stretch the game to fit screen (optimal)
+
+; UseCustomScreenDimensions must be enabled for these
+ScreenWidth = 1920           
+ScreenHeight = 1080
+
+EnableCursorClip = 0       ; Set to 1 to enable the cursor clip hotkey, used to keep the mouse locked in the window
+CursorClipHotkey = 0x7A    ; default: f11 (0x7A). You can still alt tab out of the window. This value is in hex.
+; Hotkey list can be found here: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+
+```
+**If using the executable, you must place FPSconfig.ini in the same directory as ds3DebugFps.exe.**
 
 # Is it safe to use online?
 Yes, there's a very low chance that this bans.
@@ -16,10 +34,13 @@ Yes, there's a very low chance that this bans.
 # Borderless
 This will not work in full screen mode, you will need to be in windowed mode (manually set it in game). This DLL will attempt to fullscreen the game in borderless window mode - it will fit screen too!
 
-# Compatibility
-Users of PyreProtecc will find that this DLL shares the same name as PyreProtecc, resulting in them being incompatible (it's late and I can't chain them). **PyreProtecc V5 will include all of this anywway.**
+# Cursor Clip - DLL ONLY
+You can now set a hotkey to clip the cursor to the window, this *should* work for those with multiple monitors. 
 
-# **Yes, you could just use the public Dark Souls III cheat table to achieve this.**
+# Compatibility
+You can use the new executable with PyreProtecc however you will be missing the cursor clip feature.
+
+
 Check this out on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
 
 
@@ -28,4 +49,5 @@ Check this out on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab
 | Luke_Yui    | Debug Menu Mod                                                     |
 | inuNorii    | Debug Menu Pointers in the public Cheat Table                      | 
 | Pyre        | DLL wrapper, could not have done without PyreProtecc's source code.|
-| bladecoding | Remove intro screens memory region
+| bladecoding | Remove intro screens memory region                                 |
+| benhoyt     | inih - .ini parser                                                 |
