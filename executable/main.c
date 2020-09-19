@@ -42,10 +42,6 @@ void setFps(float rFPS) {
     HWND hWnd = FindWindowA(NULL, "DARK SOULS III");
     GetWindowThreadProcessId(hWnd, &PID);
     HANDLE pHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
-    
-    // Skip Intros (Credit to bladecoding, pawREP, hallcristobal for memory region)
-    unsigned char SkipIntro[20] = {0x48, 0x31, 0xC0, 0x48, 0x89, 0x02, 0x49, 0x89, 0x04, 0x24, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
-    WriteProcessMemory(pHandle, (LPVOID)0x140BE9D0F, SkipIntro, 20, 0);
 
     // Borderless
     if (configFile.UseCustomScreenDimensions != 1) {
