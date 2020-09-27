@@ -55,14 +55,14 @@ void setFps(float rFPS) {
     final.left = 0;
     final.top = 0;
     SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    AdjustWindowRect(&final, GetWindowLong(hWnd, GWL_STYLE), false);
+    AdjustWindowRect(&final, GetWindowLong(hWnd, GWL_STYLE), FALSE);
     SetWindowLong(hWnd, GWL_EXSTYLE, (GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_TOPMOST));
-    MoveWindow(hWnd, final.left, final.top, final.right - final.left, final.bottom - final.top, true);
+    MoveWindow(hWnd, final.left, final.top, final.right - final.left, final.bottom - final.top, TRUE);
 
     // GRAPHICS -> GFX
     ReadProcessMemory(pHandle, (LPVOID)SprjFlipper, &SprjFlipper, sizeof(SprjFlipper), NULL);
     WriteProcessMemory(pHandle, (LPVOID)(SprjFlipper + 0x354), &rFPS, sizeof(DWORD), NULL); // Debug FPS | デバッグFPS
-    WriteProcessMemory(pHandle, (LPVOID)(SprjFlipper + 0x358), &useDebug, sizeof(bool), NULL); // Use Debug FPS | デバッグFPSを利用するか
+    WriteProcessMemory(pHandle, (LPVOID)(SprjFlipper + 0x358), &useDebug, sizeof(char), NULL); // Use Debug FPS | デバッグFPSを利用するか
 }
 
 int main() {

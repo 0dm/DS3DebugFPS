@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-typedef enum {false=0, true=1} bool; 
-
-bool useDebug = true;
+char useDebug = TRUE;
 DWORD64 SprjFlipper = 0x144888440;
 RECT final;
 
