@@ -1,7 +1,6 @@
 #ifndef _main_h   
 #define _main_h
 #define MATCH(s,n) strcmp(section, s) == 0 && strcmp(name, n) == 0
-#include <stdio.h>
 #include <windows.h>
 
 char useDebug = TRUE;

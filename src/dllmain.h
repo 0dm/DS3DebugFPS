@@ -3,7 +3,6 @@
 #define importD3D(...) __VA_ARGS__;
 #define IMPORT(a) a##_=GetProcAddress(BaseAddressGenuine,#a)
 #define MATCH(s,n) strcmp(section, s) == 0 && strcmp(name, n) == 0
-#include <stdio.h>
 #include <windows.h>
 
 char useDebug = TRUE;
