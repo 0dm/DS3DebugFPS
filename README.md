@@ -40,14 +40,15 @@ You can now set a hotkey to clip the cursor to the window, this *should* work fo
 
 # Compatibility
 You can use the new executable with PyreProtecc however you will be missing the cursor clip feature.
+This mod should work would PvP Watchdog.
 
-
-Check this out on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
+# Other Info
+This mod will sometimes get small updates on Github, but full releases will only occur when functionality changes drastically.
+Support the mod on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
 
 
 | Credits  |                                                                       | 
 |----------|-----------------------------------------------------------------------|
-| Luke_Yui    | Debug Menu Mod                                                     |
 | inuNorii    | Debug Menu Pointers in the public Cheat Table                      | 
 | Pyre        | DLL wrapper, could not have done without PyreProtecc's source code.|
 | bladecoding | Remove intro screens memory region                                 |
