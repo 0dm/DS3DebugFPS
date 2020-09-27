@@ -44,6 +44,7 @@ This mod should work would PvP Watchdog.
 
 # Other Info
 This mod will sometimes get small updates on Github, but full releases will only occur when functionality changes drastically.
+
 Support the mod on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
 
 
