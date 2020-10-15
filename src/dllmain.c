@@ -1,5 +1,5 @@
 #include "dllmain.h"
-#include "lib/inih/ini.h"
+#include "lib/inih/ini.c"
 
 typedef struct {
     float fps;
