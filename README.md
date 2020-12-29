@@ -1,5 +1,4 @@
-# DS3DebugFPS
-Unlock the frame rate in Dark Souls III. 
+# Unlock the frame rate in Dark Souls III. 
 
 # Installation
 Move D3DCompiler_43.dll and FPSconfig.ini into your game directory.
