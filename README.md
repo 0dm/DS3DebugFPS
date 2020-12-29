@@ -28,7 +28,7 @@ CursorClipHotkey = 0x7A    ; default: f11 (0x7A). You can still alt tab out of t
 **If using the executable, you must place FPSconfig.ini in the same directory as ds3DebugFps.exe.**
 
 # Is it safe to use online?
-Yes, there's a very low chance that this bans.
+Yes, there's a **very** low chance that this bans.
 
 2020/8/1: Users have reported that the mod is safe to use online without penalization, but please use it at your own discretion!
 
