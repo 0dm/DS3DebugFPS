@@ -1,4 +1,4 @@
-# DS3DebugFps
+# DS3DebugFPS
 Unlock the frame rate in Dark Souls III. 
 
 # Installation
@@ -53,4 +53,3 @@ Support the mod on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?ta
 | inuNorii    | Debug Menu Pointers in the public Cheat Table                      | 
 | Pyre        | DLL wrapper, could not have done without PyreProtecc's source code.|
 | bladecoding | Remove intro screens memory region                                 |
-| benhoyt     | inih - .ini parser                                                 |
