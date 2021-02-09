@@ -1,5 +1,4 @@
-# DS3DebugFps
-Unlock the frame rate in Dark Souls III. 
+# Unlock the frame rate in Dark Souls III. 
 
 # Installation
 Move D3DCompiler_43.dll and FPSconfig.ini into your game directory.
@@ -28,7 +27,7 @@ CursorClipHotkey = 0x7A    ; default: f11 (0x7A). You can still alt tab out of t
 **If using the executable, you must place FPSconfig.ini in the same directory as ds3DebugFps.exe.**
 
 # Is it safe to use online?
-Yes, there's a very low chance that this bans.
+Yes, there's a **very** low chance that this bans.
 
 2020/8/1: Users have reported that the mod is safe to use online without penalization, but please use it at your own discretion!
 
@@ -40,15 +39,16 @@ You can now set a hotkey to clip the cursor to the window, this *should* work fo
 
 # Compatibility
 You can use the new executable with PyreProtecc however you will be missing the cursor clip feature.
+This mod should work would PvP Watchdog.
 
+# Other Info
+This mod will sometimes get small updates on Github, but full releases will only occur when functionality changes drastically.
 
-Check this out on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
+Support the mod on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
 
 
 | Credits  |                                                                       | 
 |----------|-----------------------------------------------------------------------|
-| Luke_Yui    | Debug Menu Mod                                                     |
 | inuNorii    | Debug Menu Pointers in the public Cheat Table                      | 
 | Pyre        | DLL wrapper, could not have done without PyreProtecc's source code.|
 | bladecoding | Remove intro screens memory region                                 |
-| benhoyt     | inih - .ini parser                                                 |
