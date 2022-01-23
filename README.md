@@ -38,13 +38,15 @@ This will not work in full screen mode, you will need to be in windowed mode (ma
 You can now set a hotkey to clip the cursor to the window, this *should* work for those with multiple monitors. 
 
 # Compatibility
-You can use the new executable with PyreProtecc however you will be missing the cursor clip feature.
-This mod should work would PvP Watchdog.
+This mod is compatible with both Blue Senintel and will not interfere with mods that use dinput8 like Wex Dust.
+You can use the executable version with PyreProtecc however you will be missing the cursor clip feature.
+
 
 # Other Info
 This mod will sometimes get small updates on Github, but full releases will only occur when functionality changes drastically.
 
 Support the mod on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
+If you really like the mod, you can [fuel my coffee addiction here](https://ko-fi.com/0dmsaucy)
 
 
 | Credits  |                                                                       | 
