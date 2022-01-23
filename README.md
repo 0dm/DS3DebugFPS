@@ -46,6 +46,7 @@ You can use the executable version with PyreProtecc however you will be missing 
 This mod will sometimes get small updates on Github, but full releases will only occur when functionality changes drastically.
 
 Support the mod on [Nexus Mods](https://www.nexusmods.com/darksouls3/mods/614?tab=description)
+
 If you really like the mod, you can [fuel my coffee addiction here](https://ko-fi.com/0dmsaucy)
 
 
