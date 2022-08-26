@@ -53,9 +53,9 @@ void setFps(float rFPS) {
   GetWindowThreadProcessId(hWnd, &PID);
   HANDLE pHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
 
-  // Skip Intros (Credit to bladecoding, pawREP, hallcristobal for memory region)
-  unsigned char SkipIntro[20] = {0x48, 0x31, 0xC0, 0x48, 0x89, 0x02, 0x49, 0x89, 0x04, 0x24, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
-  NtWriteVirtualMemory(pHandle, (LPVOID)0x140BE9D0F, SkipIntro, 20, 0);
+  // Skip Intros (Credit to bladecoding, pawREP, hallcristobal for memory region) - broken for now
+  //unsigned char SkipIntro[20] = {0x48, 0x31, 0xC0, 0x48, 0x89, 0x02, 0x49, 0x89, 0x04, 0x24, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
+  //NtWriteVirtualMemory(pHandle, (LPVOID)0x140BE9D0F, SkipIntro, 20, 0);
 
   // Borderless
   if (configFile.UseCustomScreenDimensions != 1) {
@@ -72,6 +72,8 @@ void setFps(float rFPS) {
   SetWindowLong(hWnd, GWL_EXSTYLE, (GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_TOPMOST));
   MoveWindow(hWnd, final.left, final.top, final.right - final.left, final.bottom - final.top, TRUE);
 
+  SprjFlipper = (DWORD64)GetModuleHandle("darksoulsiii.exe") + 0x489DD20;
+  
   // GRAPHICS -> GFX
   NtReadVirtualMemory(pHandle, (LPVOID)SprjFlipper, &SprjFlipper, sizeof(SprjFlipper), NULL);
 

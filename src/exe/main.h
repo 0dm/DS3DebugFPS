@@ -6,7 +6,12 @@
 #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
 
 char useDebug = TRUE;
+<<<<<<< Updated upstream
 DWORD64 SprjFlipper = 0x14489DD20;
+=======
+DWORD64 SprjFlipper;
+
+>>>>>>> Stashed changes
 RECT final;
 
 NTSYSAPI NTSTATUS NTAPI NtReadVirtualMemory(HANDLE ProcessHandle, void *BaseAddress, const void *Buffer,
