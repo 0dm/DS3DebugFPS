@@ -8,7 +8,7 @@
 #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
 
 char useDebug = TRUE;
-DWORD64 SprjFlipper = 0x144888440;
+DWORD64 SprjFlipper = 0x14489DD20;
 RECT final;
 
 NTSYSAPI NTSTATUS NTAPI NtReadVirtualMemory(HANDLE ProcessHandle, void *BaseAddress, const void *Buffer,
