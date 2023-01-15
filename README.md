@@ -54,4 +54,3 @@ If you really like the mod, you can [fuel my coffee addiction here](https://ko-f
 |----------|-----------------------------------------------------------------------|
 | inuNorii    | Debug Menu Pointers in the public Cheat Table                      | 
 | Pyre        | DLL wrapper, could not have done without PyreProtecc's source code.|
-| bladecoding | Remove intro screens memory region                                 |
