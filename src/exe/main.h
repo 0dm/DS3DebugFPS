@@ -7,6 +7,7 @@
 
 char useDebug = TRUE;
 DWORD64 SprjFlipper;
+
 RECT final;
 
 NTSYSAPI NTSTATUS NTAPI NtReadVirtualMemory(HANDLE ProcessHandle, void *BaseAddress, const void *Buffer,

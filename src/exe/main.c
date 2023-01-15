@@ -53,7 +53,7 @@ void setFps(float rFPS) {
   SetWindowLong(hWnd, GWL_EXSTYLE, (GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_TOPMOST));
   MoveWindow(hWnd, final.left, final.top, final.right - final.left, final.bottom - final.top, TRUE);
 
-  SprjFlipper = (DWORD64)GetModuleHandle("darksoulsiii.exe") + 0x489DD20;
+  SprjFlipper = (DWORD64)GetModuleHandle("darksoulsiii.exe") + 0x489DD10;
   
   // GRAPHICS -> GFX
   NtReadVirtualMemory(pHandle, (LPVOID)SprjFlipper, &SprjFlipper, sizeof(SprjFlipper), NULL);
