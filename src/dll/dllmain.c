@@ -199,7 +199,7 @@ BOOL WINAPI DllMain(HINSTANCE baseaddr, DWORD reason, BOOL isstatic) {
     while (BaseFileName-- > FullFilePath)
       if (*BaseFileName == L'\\')
         break;
-    readFile();  // Read config file first
+    readFile();
     log_init();  // Initialize logging
   case DLL_THREAD_ATTACH:
     break;
