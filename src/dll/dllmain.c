@@ -12,7 +12,7 @@ typedef struct {
   int EnableCursorClip;
   int CursorClipHotkey;
   int EnableLogging;
-  int EnableBorderless;  // New option for borderless window mode
+  int EnableBorderless;
 } config;
 config configFile;
 
