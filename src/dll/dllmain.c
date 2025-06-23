@@ -165,7 +165,6 @@ void setFps(float rFPS) {
         DWORD64 realSprjFlipper = 0;
         NtReadVirtualMemory(pHandle, (LPVOID)matchAddr, &realSprjFlipper, sizeof(realSprjFlipper), NULL);
         log_print("[PATCH] Read pointer at match: 0x%llx", realSprjFlipper);
-        // Write the FPS value at the pointer + 0x354
         NtWriteVirtualMemory(pHandle, (LPVOID)(realSprjFlipper + 0x354), &rFPS, sizeof(DWORD), NULL);
         log_print("[PATCH] Patched rFPS at: 0x%llx", realSprjFlipper + 0x354);
         // Write the useDebug value at the pointer + 0x358
