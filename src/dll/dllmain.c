@@ -122,22 +122,7 @@ void setFps(float rFPS) {
     MoveWindow(hWnd, final.left, final.top, final.right - final.left, final.bottom - final.top, TRUE);
     log_print("[INFO] Borderless window mode applied successfully");
   }
-
-  // --- ORIGINAL CODE WITH HARDCODED OFFSET ---
-  // HMODULE hModule = GetModuleHandleA("darksoulsiii.exe");
-  // log_print("[ORIG] Module base address: 0x%p", hModule);
-  // DWORD64 origSprjFlipper = (DWORD64)hModule + 0x489DD10;
-  // log_print("[ORIG] SprjFlipper (base + offset): 0x%llx", origSprjFlipper);
-
-  // DWORD64 SprjFlipper = origSprjFlipper;
-  // NtReadVirtualMemory(pHandle, (LPVOID)SprjFlipper, &SprjFlipper, sizeof(SprjFlipper), NULL);
-  // log_print("[ORIG] NtReadVirtualMemory for SprjFlipper done.");
-  // NtWriteVirtualMemory(pHandle, (LPVOID)(SprjFlipper + 0x354), &rFPS, sizeof(DWORD), NULL);
-  // log_print("[ORIG] NtWriteVirtualMemory for rFPS.");
-  // NtWriteVirtualMemory(pHandle, (LPVOID)(SprjFlipper + 0x358), &useDebug, sizeof(char), NULL);
-  // log_print("[ORIG] NtWriteVirtualMemory for useDebug.");
-
-  // --- NEW PATTERN SCAN APPROACH (single scan for the two known matching patterns) ---
+  
   HMODULE hModule = GetModuleHandleA("darksoulsiii.exe");
   log_print("[SCAN] Module base address: 0x%p", hModule);
 
