@@ -162,7 +162,6 @@ void setFps(float rFPS) {
         foundCount++;
         DWORD64 matchAddr = (DWORD64)(moduleBase + i);
         log_print("[SCAN] Pattern %s match at: 0x%llx", found1 ? "F4" : "F3", matchAddr);
-        // Read the pointer at the matched address
         DWORD64 realSprjFlipper = 0;
         NtReadVirtualMemory(pHandle, (LPVOID)matchAddr, &realSprjFlipper, sizeof(realSprjFlipper), NULL);
         log_print("[PATCH] Read pointer at match: 0x%llx", realSprjFlipper);
