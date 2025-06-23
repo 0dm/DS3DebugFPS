@@ -171,7 +171,7 @@ void setFps(float rFPS) {
         // Write the useDebug value at the pointer + 0x358
         NtWriteVirtualMemory(pHandle, (LPVOID)(realSprjFlipper + 0x358), &useDebug, sizeof(char), NULL);
         log_print("[PATCH] Patched useDebug at: 0x%llx", realSprjFlipper + 0x358);
-        break; // Only patch the first match
+        break;
       }
     }
     if (foundCount == 0) {
