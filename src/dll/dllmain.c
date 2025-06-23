@@ -67,11 +67,13 @@ FILE* logFile = NULL;
 
 void log_init() {
     if (!configFile.EnableLogging) return;
-    logFile = fopen("DS3DebugFPS_log.txt", "a");
+    logFile = fopen("DS3DebugFPS_log.txt", "w");
     if (logFile) {
         fprintf(logFile, "[INFO] Log started\n");
         fflush(logFile);
     }
+    fclose(logFile);
+    logFile = fopen("DS3DebugFPS_log.txt", "a");
 }
 void log_close() {
     if (!configFile.EnableLogging) return;
