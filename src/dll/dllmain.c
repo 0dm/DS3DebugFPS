@@ -1,6 +1,5 @@
 #include "dllmain.h"
 #include "../../external/inih/ini.c"
-#include "pattern_scan.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <psapi.h>
