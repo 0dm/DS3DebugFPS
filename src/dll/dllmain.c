@@ -217,3 +217,6 @@ importD3D(FARPROC D3DAssemble_, DebugSetMute_, D3DCompile_, D3DCompressShaders_,
     setFps(readFile());
   }
 }
+
+// Dummy atexit implementation for -nostartfiles builds
+int atexit(void (*func)(void)) { return 0; }
