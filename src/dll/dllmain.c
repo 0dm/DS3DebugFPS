@@ -94,6 +94,9 @@ void setFps(float rFPS) {
   // Find Process
   DWORD PID;
   HWND hWnd = FindWindowA(NULL, "DARK SOULS III");
+  if (!hWnd) {
+    hWnd = FindWindowA(NULL, "Dark Souls: Archthrones");
+  }
   log_print("[INFO] FindWindowA returned HWND = %p", hWnd);
   GetWindowThreadProcessId(hWnd, &PID);
   log_print("[INFO] GetWindowThreadProcessId returned PID = %lu", PID);
