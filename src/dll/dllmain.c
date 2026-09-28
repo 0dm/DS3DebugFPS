@@ -2,6 +2,7 @@
 #include "../../external/inih/ini.c"
 #include <stdio.h>
 #include <stdarg.h>
+#include <math.h>
 #include <psapi.h>
 
 typedef struct {
@@ -13,6 +14,7 @@ typedef struct {
   int CursorClipHotkey;
   int EnableLogging;
   int EnableBorderless;
+  int FixSprintSlowdown;
 } config;
 config configFile;
 
@@ -30,8 +32,7 @@ static int handler(void *Settings, const char *section, const char *name, const 
   config *modconfig = (config *)Settings;
   if (MATCH("Settings", "fps")) {
     modconfig->fps = atof(value);
-  } 
-  if (MATCH("Settings", "UseCustomScreenDimensions")) {
+  } else if (MATCH("Settings", "UseCustomScreenDimensions")) {
     modconfig->UseCustomScreenDimensions = atoi(value);
   } else if (MATCH("Settings", "ScreenWidth")) {
     modconfig->ScreenWidth = atoi(value);
@@ -45,6 +46,8 @@ static int handler(void *Settings, const char *section, const char *name, const 
     modconfig->EnableLogging = atoi(value);
   } else if (MATCH("Settings", "EnableBorderless")) {
     modconfig->EnableBorderless = atoi(value);
+  } else if (MATCH("Settings", "FixSprintSlowdown")) {
+    modconfig->FixSprintSlowdown = atoi(value);
   } else
     return 0;
   return 1;
@@ -55,6 +58,7 @@ float readFile() {
   configFile.EnableLogging = 0;     // Default logging off
   configFile.fps = 1000;            // Default FPS limit
   configFile.EnableBorderless = 1;  // Default borderless enabled
+  configFile.FixSprintSlowdown = 1; // Default sprint fix enabled
   
   // Parse INI file, which will override defaults if present
   if (ini_parse("FPSconfig.ini", handler, &configFile) < 0) {
@@ -89,90 +93,264 @@ void log_print(const char* fmt, ...) {
     va_end(args);
 }
 
+// Committed pages only, Proton leaves unreadable gaps in the module
+BYTE *scan(BYTE *start, BYTE *end, const BYTE *pattern, const char *mask) {
+  size_t patternLen = strlen(mask);
+  MEMORY_BASIC_INFORMATION mbi;
+  for (BYTE *region = start; region < end && VirtualQuery(region, &mbi, sizeof(mbi)); region = (BYTE *)mbi.BaseAddress + mbi.RegionSize) {
+    if (mbi.State != MEM_COMMIT || (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)))
+      continue;
+    BYTE *regionEnd = (BYTE *)mbi.BaseAddress + mbi.RegionSize;
+    if (regionEnd > end)
+      regionEnd = end;
+    for (BYTE *p = region; p + patternLen <= regionEnd; ++p) {
+      size_t j = 0;
+      while (j < patternLen && (mask[j] != 'x' || p[j] == pattern[j]))
+        ++j;
+      if (j == patternLen)
+        return p;
+    }
+  }
+  return NULL;
+}
+
+void writeCode(void *address, const void *bytes, size_t size) {
+  DWORD oldProtect;
+  VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+  memcpy(address, bytes, size);
+  VirtualProtect(address, size, oldProtect, &oldProtect);
+  FlushInstructionCache(GetCurrentProcess(), address, size);
+}
+
+void redirect(BYTE *disp, void *target) {
+  int rel = (int)((BYTE *)target - (disp + 4));
+  writeCode(disp, &rel, sizeof(rel));
+}
+
+BOOL isSprjFlipper(DWORD64 object, BYTE *moduleBase, DWORD moduleSize) {
+  DWORD64 vtable = 0;
+  if (!object || (object & 7))
+    return FALSE;
+  if (NtReadVirtualMemory(GetCurrentProcess(), (LPVOID)object, &vtable, sizeof(vtable), NULL) != 0)
+    return FALSE;
+  return vtable >= (DWORD64)moduleBase && vtable < (DWORD64)moduleBase + moduleSize;
+}
+
+DWORD64 findSprjFlipper(BYTE *moduleBase, DWORD moduleSize) {
+  BYTE *moduleEnd = moduleBase + moduleSize;
+
+  // mov ecx, 0x368; call; ... mov [rip+slot], rax
+  BYTE ctorPattern[] = { 0xB9, 0x68, 0x03, 0x00, 0x00, 0xE8 };
+  for (BYTE *hit = moduleBase; (hit = scan(hit, moduleEnd, ctorPattern, "xxxxxx")); ++hit) {
+    for (int i = 0; i < 64 - 7; ++i) {
+      if (hit[i] == 0x48 && hit[i + 1] == 0x89 && hit[i + 2] == 0x05) {
+        DWORD64 slot = (DWORD64)(hit + i + 7) + *(int *)(hit + i + 3);
+        DWORD64 object = 0;
+        NtReadVirtualMemory(GetCurrentProcess(), (LPVOID)slot, &object, sizeof(object), NULL);
+        if (isSprjFlipper(object, moduleBase, moduleSize)) {
+          log_print("[SCAN] Constructor pattern match at: 0x%llx, slot 0x%llx", (DWORD64)hit, slot);
+          return object;
+        }
+        break;
+      }
+    }
+  }
+
+  // Fallback for Archthrones
+  BYTE sprjFlipperPattern[] = { 0x50, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  for (BYTE *hit = moduleBase; (hit = scan(hit, moduleEnd, sprjFlipperPattern, "xx????xxxxxxxxxx")); ++hit) {
+    if (isSprjFlipper(*(DWORD64 *)hit, moduleBase, moduleSize)) {
+      log_print("[SCAN] Pointer pattern match at: 0x%llx", (DWORD64)hit);
+      return *(DWORD64 *)hit;
+    }
+  }
+  return 0;
+}
+
+float fpsCap;
+
+DWORD WINAPI patchFps(void *args) {
+  MODULEINFO moduleInfo;
+  if (!GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(NULL), &moduleInfo, sizeof(moduleInfo))) {
+    log_print("[SCAN] Failed to get module information for scan.");
+    return 0;
+  }
+  log_print("[SCAN] Module base address: 0x%p", moduleInfo.lpBaseOfDll);
+
+  for (int i = 0; i < 40 && !SprjFlipper; ++i) {
+    SprjFlipper = findSprjFlipper(moduleInfo.lpBaseOfDll, moduleInfo.SizeOfImage);
+    if (!SprjFlipper)
+      Sleep(250);
+  }
+  if (!SprjFlipper) {
+    log_print("[SCAN] No matching patterns found in module.");
+    return 0;
+  }
+
+  NtWriteVirtualMemory(GetCurrentProcess(), (LPVOID)(SprjFlipper + 0x354), &fpsCap, sizeof(DWORD), NULL);
+  log_print("[PATCH] Patched rFPS at: 0x%llx", SprjFlipper + 0x354);
+  NtWriteVirtualMemory(GetCurrentProcess(), (LPVOID)(SprjFlipper + 0x358), &useDebug, sizeof(char), NULL);
+  log_print("[PATCH] Patched useDebug at: 0x%llx", SprjFlipper + 0x358);
+  return 0;
+}
+
+float *speedFactors;
+void *SpeedHookReturn;
+void SpeedHook();
+
+void UpdateSpeedFactors() {
+  float frameTime = 1.0f / fpsCap;
+  if (SprjFlipper) {
+    float measured = *(float *)(SprjFlipper + 0x26C);
+    if (measured >= 1.0f / 480.0f && measured <= 0.05f)
+      frameTime = measured;
+  }
+  if (frameTime < 1.0f / 480.0f)
+    frameTime = 1.0f / 480.0f;
+  if (frameTime > 0.05f)
+    frameTime = 0.05f;
+
+  float slack = fpsCap >= 90.0f ? 1.2f : 1.0f;
+  float recovery = fpsCap >= 90.0f ? 1.5f : 1.2f;
+  speedFactors[0] = 0.5f / frameTime * slack;
+  speedFactors[1] = expf(logf(0.8f) * frameTime * 60.0f);
+  speedFactors[2] = expf(logf(recovery) * frameTime * 60.0f);
+}
+
+void fixSprintSlowdown(BYTE *moduleBase, DWORD moduleSize) {
+  // Stuck check: distance * 30.0 < 1, tuned for 60 FPS
+  BYTE speedPattern[] = { 0xF3, 0x0F, 0x58, 0x00, 0x0F, 0xC6, 0x00, 0x00, 0x0F, 0x51, 0x00, 0xF3, 0x0F, 0x59, 0x05, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x2F };
+  BYTE *hit = scan(moduleBase, moduleBase + moduleSize, speedPattern, "xxx?xx?xxx?xxxx????xx");
+  if (!hit) {
+    log_print("[SCAN] Running-speed check not found, sprint slowdown is unchanged.");
+    return;
+  }
+  log_print("[SCAN] Running-speed check at: 0x%llx", (DWORD64)hit);
+
+  // Must be within 2GB of the game code
+  BYTE *page = NULL;
+  for (BYTE *hint = (BYTE *)(((DWORD64)moduleBase + moduleSize + 0xFFFF) & ~0xFFFFULL); !page && hint < moduleBase + 0x70000000; hint += 0x10000)
+    page = VirtualAlloc(hint, 0x1000, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+  if (!page) {
+    log_print("[PATCH] Could not allocate memory near the game code.");
+    return;
+  }
+  speedFactors = (float *)page;
+  UpdateSpeedFactors();
+
+  redirect(hit + 15, &speedFactors[0]);
+  if (memcmp(hit + 0x29, "\xF3\x0F\x59\x05", 4) == 0 && memcmp(hit + 0x54, "\xF3\x0F\x59\x05", 4) == 0) {
+    redirect(hit + 0x2D, &speedFactors[1]);
+    redirect(hit + 0x58, &speedFactors[2]);
+  } else {
+    log_print("[PATCH] Slowdown and recovery rates not found, left alone.");
+  }
+
+  BYTE prologue[] = { 0x4C, 0x8B, 0xDC, 0x57, 0x48, 0x83, 0xEC, 0x70 };
+  BYTE *function = NULL;
+  for (int i = 8; i <= 0x180 && !function; ++i)
+    if (memcmp(hit - i, prologue, sizeof(prologue)) == 0)
+      function = hit - i;
+  if (!function) {
+    log_print("[PATCH] Movement function not found, sprint fix uses the FPS cap only.");
+    return;
+  }
+
+  BYTE *trampoline = page + 0x40;
+  trampoline[0] = 0xFF;
+  trampoline[1] = 0x25;
+  *(DWORD *)(trampoline + 2) = 0;
+  *(void **)(trampoline + 6) = (void *)SpeedHook;
+  SpeedHookReturn = function + sizeof(prologue);
+
+  BYTE jump[8] = { 0xE9, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90 };
+  *(int *)(jump + 1) = (int)(trampoline - (function + 5));
+  writeCode(function, jump, sizeof(jump));
+  log_print("[PATCH] Sprint slowdown fixed, movement function at: 0x%llx", (DWORD64)function);
+}
+
+void applyBorderless(HWND hWnd) {
+  static BOOL applying = FALSE;
+  if (!hWnd || applying)
+    return;
+  applying = TRUE;
+  if (configFile.UseCustomScreenDimensions != 1) {
+    final.right = GetSystemMetrics(SM_CXSCREEN);
+    final.bottom = GetSystemMetrics(SM_CYSCREEN);
+  } else {
+    final.right = configFile.ScreenWidth;
+    final.bottom = configFile.ScreenHeight;
+  }
+  final.left = 0;
+  final.top = 0;
+  SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+  AdjustWindowRect(&final, GetWindowLong(hWnd, GWL_STYLE), FALSE);
+  SetWindowLong(hWnd, GWL_EXSTYLE, (GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_TOPMOST));
+  SetWindowPos(hWnd, HWND_TOPMOST, final.left, final.top, final.right - final.left, final.bottom - final.top, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+  applying = FALSE;
+}
+
+// Archthrones resets the window style after borderless is applied
+LONG (WINAPI *SetWindowLongW_)(HWND hWnd, int nIndex, LONG dwNewLong);
+LONG WINAPI SetWindowLongHook(HWND hWnd, int nIndex, LONG dwNewLong) {
+  BOOL gameWindow = hWnd == FindWindowA(NULL, "DARK SOULS III");
+  if (gameWindow && nIndex == GWL_STYLE)
+    dwNewLong = (dwNewLong & ~(WS_CAPTION | WS_THICKFRAME | WS_SYSMENU)) | WS_POPUP | WS_VISIBLE;
+  LONG result = SetWindowLongW_(hWnd, nIndex, dwNewLong);
+  if (gameWindow && (nIndex == GWL_STYLE || nIndex == GWL_EXSTYLE))
+    applyBorderless(hWnd);
+  return result;
+}
+
+void hookImport(const char *dll, const char *function, void *hook, void **original) {
+  BYTE *base = (BYTE *)GetModuleHandleA(NULL);
+  IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)(base + ((IMAGE_DOS_HEADER *)base)->e_lfanew);
+  IMAGE_IMPORT_DESCRIPTOR *import = (IMAGE_IMPORT_DESCRIPTOR *)(base + nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+  for (; import->Name; ++import) {
+    if (_stricmp((char *)(base + import->Name), dll) != 0 || !import->OriginalFirstThunk)
+      continue;
+    IMAGE_THUNK_DATA *names = (IMAGE_THUNK_DATA *)(base + import->OriginalFirstThunk);
+    IMAGE_THUNK_DATA *iat = (IMAGE_THUNK_DATA *)(base + import->FirstThunk);
+    for (; names->u1.AddressOfData; ++names, ++iat) {
+      if (IMAGE_SNAP_BY_ORDINAL(names->u1.Ordinal) || strcmp((char *)((IMAGE_IMPORT_BY_NAME *)(base + names->u1.AddressOfData))->Name, function) != 0)
+        continue;
+      DWORD oldProtect;
+      VirtualProtect(&iat->u1.Function, sizeof(iat->u1.Function), PAGE_READWRITE, &oldProtect);
+      *original = (void *)iat->u1.Function;
+      iat->u1.Function = (ULONG_PTR)hook;
+      VirtualProtect(&iat->u1.Function, sizeof(iat->u1.Function), oldProtect, &oldProtect);
+      log_print("[PATCH] Hooked %s!%s", dll, function);
+      return;
+    }
+  }
+  log_print("[PATCH] Import %s!%s not found.", dll, function);
+}
+
 void setFps(float rFPS) {
   log_print("[INFO] setFps called with rFPS = %f", rFPS);
-  // Find Process
-  DWORD PID;
+  fpsCap = rFPS;
   HWND hWnd = FindWindowA(NULL, "DARK SOULS III");
   if (!hWnd) {
     hWnd = FindWindowA(NULL, "Dark Souls: Archthrones");
   }
   log_print("[INFO] FindWindowA returned HWND = %p", hWnd);
-  GetWindowThreadProcessId(hWnd, &PID);
-  log_print("[INFO] GetWindowThreadProcessId returned PID = %lu", PID);
-  HANDLE pHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
-  log_print("[INFO] OpenProcess returned HANDLE = %p", pHandle);
-
-  // Skip Intros 
-  unsigned char SkipIntro[20] = {0x48, 0x31, 0xC0, 0x48, 0x89, 0x02, 0x49, 0x89, 0x04, 0x24, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
-  NtWriteVirtualMemory(pHandle, (LPVOID)0x140BF66AE, SkipIntro, 20, 0);
 
   // Borderless window mode (if enabled)
   if (configFile.EnableBorderless) {
     log_print("[INFO] Applying borderless window mode");
-    if (configFile.UseCustomScreenDimensions != 1) {
-      final.right = GetSystemMetrics(SM_CXSCREEN);
-      final.bottom = GetSystemMetrics(SM_CYSCREEN);
-    } else {
-      final.right = configFile.ScreenWidth;
-      final.bottom = configFile.ScreenHeight;
-    }
-    final.left = 0;
-    final.top = 0;
-    SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    AdjustWindowRect(&final, GetWindowLong(hWnd, GWL_STYLE), FALSE);
-    SetWindowLong(hWnd, GWL_EXSTYLE, (GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_TOPMOST));
-    MoveWindow(hWnd, final.left, final.top, final.right - final.left, final.bottom - final.top, TRUE);
+    applyBorderless(hWnd);
     log_print("[INFO] Borderless window mode applied successfully");
   }
-  
-  HMODULE hModule = GetModuleHandleA("darksoulsiii.exe");
-  log_print("[SCAN] Module base address: 0x%p", hModule);
 
-  BYTE sprjFlipperPattern1[] = { 0x50, 0x60, 0x3E, 0x08, 0xF4, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-  BYTE sprjFlipperPattern2[] = { 0x50, 0x60, 0x3E, 0x08, 0xF3, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-  const char* sprjFlipperMask = "xx??xxxxxxxxxxxx";
+  MODULEINFO moduleInfo = {0};
+  if (configFile.FixSprintSlowdown && rFPS > 0 &&
+      GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(NULL), &moduleInfo, sizeof(moduleInfo)))
+    fixSprintSlowdown(moduleInfo.lpBaseOfDll, moduleInfo.SizeOfImage);
 
-  HMODULE scanModule = GetModuleHandleA("darksoulsiii.exe");
-  MODULEINFO moduleInfo;
-  if (GetModuleInformation(pHandle, scanModule, &moduleInfo, sizeof(moduleInfo))) {
-    BYTE* moduleBase = (BYTE*)moduleInfo.lpBaseOfDll;
-    DWORD moduleSize = moduleInfo.SizeOfImage;
-    size_t patternLen = strlen(sprjFlipperMask);
-    int foundCount = 0;
-    for (DWORD i = 0; i <= moduleSize - patternLen; ++i) {
-      BOOL found1 = TRUE, found2 = TRUE;
-      for (size_t j = 0; j < patternLen; ++j) {
-        if (sprjFlipperMask[j] == 'x') {
-          if (sprjFlipperPattern1[j] != moduleBase[i + j]) found1 = FALSE;
-          if (sprjFlipperPattern2[j] != moduleBase[i + j]) found2 = FALSE;
-        }
-      }
-      if (found1 || found2) {
-        foundCount++;
-        DWORD64 matchAddr = (DWORD64)(moduleBase + i);
-        log_print("[SCAN] Pattern %s match at: 0x%llx", found1 ? "F4" : "F3", matchAddr);
-        DWORD64 realSprjFlipper = 0;
-        NtReadVirtualMemory(pHandle, (LPVOID)matchAddr, &realSprjFlipper, sizeof(realSprjFlipper), NULL);
-        log_print("[PATCH] Read pointer at match: 0x%llx", realSprjFlipper);
-        NtWriteVirtualMemory(pHandle, (LPVOID)(realSprjFlipper + 0x354), &rFPS, sizeof(DWORD), NULL);
-        log_print("[PATCH] Patched rFPS at: 0x%llx", realSprjFlipper + 0x354);
-        NtWriteVirtualMemory(pHandle, (LPVOID)(realSprjFlipper + 0x358), &useDebug, sizeof(char), NULL);
-        log_print("[PATCH] Patched useDebug at: 0x%llx", realSprjFlipper + 0x358);
-        break;
-      }
-    }
-    if (foundCount == 0) {
-      log_print("[SCAN] No matching patterns found in module.");
-    } else {
-      log_print("[SCAN] Successfully patched FPS and useDebug values.");
-    }
-  } else {
-    log_print("[SCAN] Failed to get module information for scan.");
-  }
+  CloseHandle(CreateThread(NULL, 0, patchFps, NULL, 0, NULL));
 
   if (configFile.EnableCursorClip != 0) {
-    HANDLE thread = CreateThread(NULL, 0, (void *)containCursor, &hWnd, 0, NULL);
+    HANDLE thread = CreateThread(NULL, 0, (void *)containCursor, hWnd, 0, NULL);
     log_print("[INFO] Cursor clip thread created.");
   }
 }
@@ -188,6 +366,8 @@ BOOL WINAPI DllMain(HINSTANCE baseaddr, DWORD reason, BOOL isstatic) {
         break;
     readFile();
     log_init();
+    if (configFile.EnableBorderless)
+      hookImport("USER32.dll", "SetWindowLongW", (void *)SetWindowLongHook, (void **)&SetWindowLongW_);
   case DLL_THREAD_ATTACH:
     break;
   }
