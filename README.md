@@ -35,7 +35,7 @@ Yes, there's a **very** low chance that this bans.
 This will not work in full screen mode, you will need to be in windowed mode (manually set it in game). This DLL will attempt to fullscreen the game in borderless window mode - it will fit screen too! This also works with Archthrones.
 
 # Slow Sprinting
-Above ~82 FPS, sprinting into a wall could leave you stuck at half speed. `FixSprintSlowdown` fixes this at any frame rate, set it to 0 for the original behavior.
+The slow sprinting bug has been fixed! `FixSprintSlowdown` fixes this at any frame rate, set it to 0 for the original behavior.
 
 # Cursor Clip - DLL ONLY
 You can now set a hotkey to clip the cursor to the window, this *should* work for those with multiple monitors. 
