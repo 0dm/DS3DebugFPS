@@ -25,6 +25,7 @@ void containCursor(void *args) {
         SetCapture(args);
       ClipCursor(&final);
     }
+    Sleep(10);
   }
 }
 
@@ -286,7 +287,7 @@ void applyBorderless(HWND hWnd) {
   SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
   AdjustWindowRect(&final, GetWindowLong(hWnd, GWL_STYLE), FALSE);
   SetWindowLong(hWnd, GWL_EXSTYLE, (GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_TOPMOST));
-  SetWindowPos(hWnd, HWND_TOPMOST, final.left, final.top, final.right - final.left, final.bottom - final.top, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+  SetWindowPos(hWnd, NULL, final.left, final.top, final.right - final.left, final.bottom - final.top, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
   applying = FALSE;
 }
 
